@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cp2-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cp2-web
+  template:
+    metadata:
+      labels:
+        app: cp2-web
+    spec:
+      containers:
+        - name: nginx
+          image: acrmerliarizacp2.azurecr.io/web-podman-nginx:casopractico2
+          ports:
+            - containerPort: 443
