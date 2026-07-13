@@ -3,20 +3,45 @@
   hosts: webserver
   become: true
 
+  vars:
+    acr_registry: "acrmerliarizacp2.azurecr.io"
+    podman_image: "{{ acr_registry }}/web-podman-nginx:casopractico2"
+    container_name: "cp2-web-podman"
+
   tasks:
+    - name: Install Podman
+      ansible.builtin.apt:
+        name: podman
+        state: present
+        update_cache: true
 
-    - name: Verify Podman installation
-      command: podman --version
-      register: podman_version
+    - name: Log in to Azure Container Registry
+      containers.podman.podman_login:
+        registry: "{{ acr_registry }}"
+        username: "{{ lookup('env', 'ACR_USER') }}"
+        password: "{{ lookup('env', 'ACR_PASS') }}"
 
-    - name: Show Podman version
-      debug:
-        msg: "{{ podman_version.stdout }}"
+    - name: Pull Podman application image
+      containers.podman.podman_image:
+        name: "{{ podman_image }}"
+        pull: true
 
-    - name: Check running containers
-      command: podman ps
-      register: containers
+    - name: Run Podman web container
+      containers.podman.podman_container:
+        name: "{{ container_name }}"
+        image: "{{ podman_image }}"
+        state: started
+        recreate: true
+        ports:
+          - "443:443"
+        generate_systemd:
+          path: /etc/systemd/system
+          restart_policy: always
+          names: true
 
-    - name: Show running containers
-      debug:
-        msg: "{{ containers.stdout_lines }}"
+    - name: Enable and start Podman systemd service
+      ansible.builtin.systemd_service:
+        name: "container-{{ container_name }}.service"
+        enabled: true
+        state: started
+        daemon_reload: true

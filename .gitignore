@@ -13,3 +13,5 @@ crash.log
 
 # Linux
 .DS_Store
+# Python virtual environment
+.venv/

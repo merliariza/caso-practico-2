@@ -12,6 +12,8 @@ spec:
       labels:
         app: cp2-web
     spec:
+      imagePullSecrets:
+        - name: acr-credentials
       containers:
         - name: nginx
           image: acrmerliarizacp2.azurecr.io/web-k8s:casopractico2
@@ -19,7 +21,7 @@ spec:
             - containerPort: 80
           volumeMounts:
             - name: html-storage
-              mountPath: /usr/share/nginx/html
+              mountPath: /usr/share/nginx/html/data
       volumes:
         - name: html-storage
           persistentVolumeClaim:

@@ -1,0 +1,56 @@
+---
+- name: Deploy Caso Practico 2 application to AKS
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    acr_registry: "acrmerliarizacp2.azurecr.io"
+    acr_secret_name: "acr-credentials"
+
+  tasks:
+    - name: Create ACR image pull secret
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ acr_secret_name }}"
+          type: kubernetes.io/dockerconfigjson
+          data:
+            .dockerconfigjson: >-
+              {{
+                {
+                  "auths": {
+                    acr_registry: {
+                      "username": lookup("env", "ACR_USER"),
+                      "password": lookup("env", "ACR_PASS"),
+                      "auth": (
+                        lookup("env", "ACR_USER")
+                        ~ ":"
+                        ~ lookup("env", "ACR_PASS")
+                      ) | b64encode
+                    }
+                  }
+                } | to_json | b64encode
+              }}
+
+    - name: Apply PersistentVolumeClaim
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        src: "{{ playbook_dir }}/../app-k8s/pvc.yaml"
+
+    - name: Apply Kubernetes Deployment
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        src: "{{ playbook_dir }}/../app-k8s/deployment.yaml"
+
+    - name: Apply Kubernetes LoadBalancer Service
+      kubernetes.core.k8s:
+        state: present
+        namespace: default
+        src: "{{ playbook_dir }}/../app-k8s/service.yaml"
