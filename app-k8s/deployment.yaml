@@ -14,6 +14,13 @@ spec:
     spec:
       containers:
         - name: nginx
-          image: acrmerliarizacp2.azurecr.io/web-podman-nginx:casopractico2
+          image: acrmerliarizacp2.azurecr.io/web-k8s:casopractico2
           ports:
-            - containerPort: 443
+            - containerPort: 80
+          volumeMounts:
+            - name: html-storage
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: html-storage
+          persistentVolumeClaim:
+            claimName: cp2-storage
