@@ -1,0 +1,22 @@
+---
+- name: Deploy Caso Practico 2 - Podman Nginx
+  hosts: webserver
+  become: true
+
+  tasks:
+
+    - name: Verify Podman installation
+      command: podman --version
+      register: podman_version
+
+    - name: Show Podman version
+      debug:
+        msg: "{{ podman_version.stdout }}"
+
+    - name: Check running containers
+      command: podman ps
+      register: containers
+
+    - name: Show running containers
+      debug:
+        msg: "{{ containers.stdout_lines }}"

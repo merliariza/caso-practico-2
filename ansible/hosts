@@ -1,0 +1,2 @@
+[webserver]
+vm-casopractico2 ansible_host=68.155.158.187 ansible_user=azureuser ansible_ssh_private_key_file=/home/merli/.ssh/id_rsa
